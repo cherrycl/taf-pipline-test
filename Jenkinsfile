@@ -25,7 +25,7 @@ def call(config) {
 
         environment {
             // Define test branches and device services
-            BRANCHLIST = 'master'
+            BRANCHLIST = 'issue-42'
             PROFILELIST = 'device-virtual,device-modbus'
         }
 
@@ -42,6 +42,7 @@ def call(config) {
                             GOARCH = 'amd64'
                             SLAVE = edgex.getNode(config, 'amd64')
                             TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                            COMPOSE_IMAGE='docker-compose:1.25.4'
                         }
                         steps {
                             script {
@@ -62,6 +63,7 @@ def call(config) {
                     //         GOARCH = 'arm64'
                     //         SLAVE = edgex.getNode(config, 'arm64')
                     //         TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
+                    //         COMPOSE_IMAGE='docker-compose:1.25.4'
                     //     }
                     //     steps {
                     //         script {
