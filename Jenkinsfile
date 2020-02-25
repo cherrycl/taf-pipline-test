@@ -107,23 +107,6 @@ def call(config) {
                     junit 'TAF/testArtifacts/reports/merged-report/**.xml'
                 }
             }
-
-            stage ('Publish Robot results') {
-                steps {
-                    script {
-                        step([
-                            $class : 'RobotPublisher',
-                            outputPath : 'TAF/testArtifacts/reports/merged-report',
-                            outputFileName : "${LOGFILES}",
-                            reportFileName : '',
-                            disableArchiveOutput : false,
-                            passThreshold : 100,
-                            unstableThreshold: 95.0,
-                            otherFiles : "*.png",
-                        ])
-                    }
-                }
-            }
         }
     }
 }
