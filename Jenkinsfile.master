@@ -93,8 +93,8 @@ pipeline {
                     step([
                         $class : 'RobotPublisher',
                         outputPath : 'TAF/testArtifacts/reports/merged-report',
-                        outputFileName : "log.html",
-                        reportFileName : 'report.html',
+                        outputFileName : "report.xml",
+                        reportFileName : 'log.html',
                         disableArchiveOutput : false,
                         passThreshold : 100,
                         unstableThreshold: 95.0,
