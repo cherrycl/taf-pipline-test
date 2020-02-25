@@ -1,0 +1,107 @@
+#!/usr/bin/env groovy
+def PROFILES = 'device-virtual,device-modbus'.split(',')
+pipeline {
+    agent { label "xpert-client" }
+    options { timestamps() }
+    environment {
+            // Define test branches and device services
+        BRANCHLIST = 'master'
+        PROFILELIST = 'device-virtual,device-modbus'
+        ARCH = 'x86_64'
+        GOARCH = 'amd64'
+        SLAVE = edgex.getNode(config, 'amd64')
+        TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+        COMPOSE_IMAGE='docker/compose:1.25.4'
+    }
+    stages {
+        stage ('Checkout out master branch from edgex-taf') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']], 
+                    doGenerateSubmoduleConfigurations: false, 
+                    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '']], 
+                    submoduleCfg: [], 
+                    userRemoteConfigs: [[url: 'https://github.com/edgexfoundry/edgex-taf.git']]
+                ])
+            }
+        }
+
+        stage ('Deploy EdgeX') {
+            steps {
+                sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                        -v /var/run/docker.sock:/var/run/docker.sock nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest  \
+                        --exclude Skipped -u functionalTest/deploy-edgex.robot -p default"
+            }
+        }
+        stage ('Run Test Script') {
+            steps {
+                script {
+                    for (x in PROFILES) {
+                        def profile = x
+                        echo '===== Deploy Device Service ====='
+                        sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                                -v /var/run/docker.sock:/var/run/docker.sock iotechsys/dev-testing-edgex-taf-common:1.0.0 \
+                                --exclude Skipped -u functionalTest/device-service/deploy_device_service.robot -p ${profile}"
+
+                        echo '===== Run Device Service Test Case ====='
+                        sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                                -v /var/run/docker.sock:/var/run/docker.sock iotechsys/dev-testing-edgex-taf-common:1.0.0 \
+                                --exclude Skipped -u functionalTest/device-service/common -p ${profile}"
+
+                        dir ('TAF/testArtifacts/reports/') {
+                            stash name: "report-${profile}", includes: "edgex/*"
+
+                        }
+                        dir ('TAF/testArtifacts/reports/rename-report') {
+                            unstash "report-${profile}"
+                            sh "mv edgex/log.html ${profile}-common-log.html"
+                            sh "mv edgex/report.xml ${profile}-common-report.xml"
+                        }
+
+                        echo '===== Shutdown Device Service ====='
+                        sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                                -v /var/run/docker.sock:/var/run/docker.sock iotechsys/dev-testing-edgex-taf-common:1.0.0 \
+                                --exclude Skipped -u functionalTest/device-service/deploy_device_service.robot -p ${profile}"
+                    }
+                }
+                echo '===== Merge Reports ====='
+                sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                            -v /var/run/docker.sock:/var/run/docker.sock iotechsys/dev-testing-edgex-taf-common:1.0.0 \
+                            rebot --inputdir TAF/testArtifacts/reports/rename-report --outputdir TAF/testArtifacts/reports/merged-report"
+            }
+        }
+
+        stage ('Publish Robotframework Report...') {
+            steps{
+                echo 'Publish....'
+
+                publishHTML(
+                    target: [
+                        allowMissing: false,
+                        keepAll: false,
+                        reportDir: 'TAF/testArtifacts/reports/merged-report',
+                        reportFiles: 'log.html',
+                        reportName: 'Functional Test Reports']
+                )
+
+                junit 'TAF/testArtifacts/reports/merged-report/*.xml'
+            }
+        }
+        stage ('Publish Robot results') {
+            steps {
+                script {
+                    step([
+                        $class : 'RobotPublisher',
+                        outputPath : 'TAF/testArtifacts/reports/merged-report',
+                        outputFileName : "log.html",
+                        reportFileName : 'report.html',
+                        disableArchiveOutput : false,
+                        passThreshold : 100,
+                        unstableThreshold: 95.0,
+                        otherFiles : "*.png",
+                    ])
+                }
+            }
+        }
+    }
+}
