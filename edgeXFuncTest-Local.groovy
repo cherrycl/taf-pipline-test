@@ -7,7 +7,7 @@ def parallelBranch() {
     //def maps = (0..<Math.min(BRANCHES.size(), SLAVES.size())).collect { i -> [branch: BRANCHES[i], slave: SLAVES[i]] }
     //def runbranchstage = [:]
 
-    for (item in BRANCH) {
+    for (item in BRANCHES) {
         def BRANCH = item
         //def SLAVE = item.slave
         
