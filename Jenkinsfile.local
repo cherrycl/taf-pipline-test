@@ -1,0 +1,110 @@
+#!/usr/bin/env groovy
+def LOGFILES
+pipeline {
+    agent { label "xpert-client" }
+    options { 
+        timeout(time: 2, unit: 'HOURS')
+        timestamps() 
+    }
+
+    environment {
+        BRANCHLIST = 'master'
+        PROFILELIST = 'device-virtual,device-modbus'
+        SLAVELIST = 'edgex-client'
+        //TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+    }
+
+    stages {
+        stage ('Run Test') {
+            parallel {
+                stage('amd64'){
+                    //  when {
+                    //     beforeAgent true
+                    //     expression { edgex.nodeExists(config, 'amd64') }
+                    // }
+                    // agent { label edgex.getNode(config, 'amd64') }
+                    environment {
+                        ARCH = 'x86_64'
+                        GOARCH = 'amd64'
+                        TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                    }
+                    steps {
+                        script {
+                            def rootDir = pwd()
+                            def edgeXFuncTest = load "${rootDir}/edgeXFuncTest-Local.groovy" 
+                            edgeXFuncTest.parallelBranch()
+                        }
+                    }
+                }
+                // stage('arm64'){
+                //      when {
+                //         beforeAgent true
+                //         expression { edgex.nodeExists(config, 'arm64') }
+                //     }
+                //     agent { label edgex.getNode(config, 'arm64') }
+                //     environment {
+                //         ARCH = 'arm64'
+                //         GOARCH = 'arm64'
+                //         TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
+                //     }
+                //     steps {
+                //         script {
+                //             def rootDir = pwd()
+                //             def edgeXFuncTest = load "${rootDir}/edgeXFuncTest.groovy" 
+                //             edgeXFuncTest.parallelBranch()
+                //         }
+                //     }
+                // }
+            }
+                
+        }
+
+        stage ('Publish Robotframework Report...') {
+            steps{
+                script {
+                    def BRANCHES = "${BRANCHLIST}".split(',')
+                    for (z in BRANCHES) {
+                        def BRANCH = z
+                        echo "Branch:${BRANCH}"
+                        unstash "${BRANCH}-report"
+                    }
+                
+                    dir ('TAF/testArtifacts/reports/merged-report/') {
+                        LOGFILES= sh (
+                            script: 'ls *-log.html | sed ":a;N;s/\\n/,/g;ta"',
+                            returnStdout: true
+                        )
+                    }
+                }
+                    
+                publishHTML(
+                    target: [
+                        allowMissing: false,
+                        keepAll: false,
+                        reportDir: 'TAF/testArtifacts/reports/merged-report',
+                        reportFiles: "${LOGFILES}",
+                        reportName: 'Functional Test Reports']
+                )
+
+                junit 'TAF/testArtifacts/reports/merged-report/**.xml'
+            }
+        }
+        stage ('Publish Robot results') {
+            steps {
+                script {
+                    step([
+                        $class : 'RobotPublisher',
+                        outputPath : 'TAF/testArtifacts/reports/merged-report',
+                        outputFileName : "${LOGFILES}",
+                        reportFileName : 'report.html',
+                        disableArchiveOutput : false,
+                        passThreshold : 100,
+                        unstableThreshold: 95.0,
+                        otherFiles : "*.png",
+                    ])
+                }
+            }
+        }
+    }
+}
+
