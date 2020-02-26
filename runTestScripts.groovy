@@ -8,7 +8,7 @@ def main() {
     for (x in BRANCHES) {
         def BRANCH = x
         
-        runbranchstage["Test ${BRANCH} Branch on ${ARCH}"]= {
+        runbranchstage["Test ${ARCH}${USE_DB}${USE_NO_SECURITY}-${BRANCH}"]= {
             node("${SLAVE}") {
                 stage ('Checkout repository') {
                     checkout([$class: 'GitSCM',
@@ -22,7 +22,12 @@ def main() {
 
                 stage ('Deploy EdgeX') {
                     dir ('TAF/utils/scripts/docker') {
-                        sh "sh get-compose-file.sh ${USE_DB} ${USE_NO_SECURITY} ${ARCH}"
+                        if ("${USE_NO_SECURITY}" = '') {
+                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH}"
+                        } else {
+                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_NO_SECURITY}"
+                        }
+                        
                         sh 'ls'
                     }
 

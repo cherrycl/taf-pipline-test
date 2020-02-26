@@ -39,12 +39,11 @@ def call(config) {
                         }
                         environment {
                             ARCH = 'x86_64'
-                            //GOARCH = 'amd64'
                             SLAVE = edgex.getNode(config, 'amd64')
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
-                            USE_NO_SECURITY='-no-secty'
+                            USE_NO_SECURITY ='-no-secty'
                         }
                         steps {
                             script {
@@ -61,7 +60,6 @@ def call(config) {
                         }
                         environment {
                             ARCH = 'x86_64'
-                            //GOARCH = 'amd64'
                             SLAVE = edgex.getNode(config, 'amd64')
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
@@ -83,12 +81,11 @@ def call(config) {
                         }
                         environment {
                             ARCH = 'x86_64'
-                            //GOARCH = 'amd64'
                             SLAVE = edgex.getNode(config, 'amd64')
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE='docker/compose:1.25.4'
+                            COMPOSE_IMAGE = 'docker/compose:1.25.4'
                             USE_DB = '-mongo'
-                            USE_NO_SECURITY=''
+                            USE_NO_SECURITY = ''
                         }
                         steps {
                             script {
