@@ -128,9 +128,8 @@ def call(config) {
                         def BRANCHES = "${BRANCHLIST}".split(',')
                         for (z in BRANCHES) {
                             def BRANCH = z
-                            echo "Branch:${BRANCH}"
                             unstash "x86_64-redis-${BRANCH}-report"
-                            unstash "x86_64-mongo${BRANCH}-report"
+                            unstash "x86_64-mongo-${BRANCH}-report"
                             unstash "x86_64-mongo-security-${BRANCH}-report"
                         }
                     
