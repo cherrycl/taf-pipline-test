@@ -25,14 +25,14 @@ def call(config) {
 
         environment {
             // Define test branches and device services
-            BRANCHLIST = 'issue-43'
+            BRANCHLIST = 'master'
             PROFILELIST = 'device-virtual,device-modbus'
         }
 
         stages {
             stage ('Run Test') {
                 parallel {
-                    stage('amd64'){
+                    stage('amd64-redis'){
                          when {
                             beforeAgent true
                             expression { edgex.nodeExists(config, 'amd64') }
@@ -41,8 +41,9 @@ def call(config) {
                             ARCH = 'x86_64'
                             GOARCH = 'amd64'
                             SLAVE = edgex.getNode(config, 'amd64')
-                            TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE='docker/compose:1.25.4'
+                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                            USE_DB = '-redis'
+                            USE_NO_SECURITY="-no-secty"
                         }
                         steps {
                             script {
@@ -62,8 +63,9 @@ def call(config) {
                     //         ARCH = 'arm64'
                     //         GOARCH = 'arm64'
                     //         SLAVE = edgex.getNode(config, 'arm64')
-                    //         TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
-                    //         COMPOSE_IMAGE='docker/compose:1.25.4'
+                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
+                    //         FOR_REDIS = true
+                    //         SECURITY_SERVICE_NEEDED = false
                     //     }
                     //     steps {
                     //         script {

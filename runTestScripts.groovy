@@ -69,8 +69,8 @@ def main() {
 
                     dir ("TAF/testArtifacts/reports/${BRANCH}-report") {
                         sh "mkdir ../merged-report"
-                        sh "cp log.html ../merged-report/${ARCH}-${BRANCH}-branch-log.html"
-                        sh "cp result.xml ../merged-report/${ARCH}-${BRANCH}-branch-report.xml"
+                        sh "cp log.html ../merged-report/${ARCH}${USE_DB}${USE_NO_SECURITY}-${BRANCH}-log.html"
+                        sh "cp result.xml ../merged-report/${ARCH}${USE_DB}${USE_NO_SECURITY}-${BRANCH}-report.xml"
                     }
                     stash name: "${BRANCH}-report", includes: "TAF/testArtifacts/reports/merged-report/*"
                 }
