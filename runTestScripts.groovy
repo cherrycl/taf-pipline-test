@@ -8,7 +8,7 @@ def main() {
     for (x in BRANCHES) {
         def BRANCH = x
         
-        runbranchstage["Test ${ARCH}${USE_DB}${USE_NO_SECURITY}-${BRANCH}"]= {
+        runbranchstage["Test ${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}"]= {
             node("${SLAVE}") {
                 stage ('Checkout repository') {
                     checkout([$class: 'GitSCM',
@@ -22,10 +22,10 @@ def main() {
 
                 stage ('Deploy EdgeX') {
                     dir ('TAF/utils/scripts/docker') {
-                        if ("${USE_NO_SECURITY}" == '') {
+                        if ("${USE_SECURITY}" != '-security') {
                             sh "sh get-compose-file.sh ${USE_DB} ${ARCH}"
                         } else {
-                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_NO_SECURITY}"
+                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_SECURITY}"
                         }
                         
                         sh 'ls'
@@ -75,8 +75,8 @@ def main() {
 
                     dir ("TAF/testArtifacts/reports/${BRANCH}-report") {
                         sh "mkdir ../merged-report"
-                        sh "cp log.html ../merged-report/${ARCH}${USE_DB}${USE_NO_SECURITY}-${BRANCH}-log.html"
-                        sh "cp result.xml ../merged-report/${ARCH}${USE_DB}${USE_NO_SECURITY}-${BRANCH}-report.xml"
+                        sh "cp log.html ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}-log.html"
+                        sh "cp result.xml ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}-report.xml"
                     }
                     stash name: "${BRANCH}-report", includes: "TAF/testArtifacts/reports/merged-report/*"
                 }
