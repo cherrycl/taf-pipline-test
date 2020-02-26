@@ -78,7 +78,7 @@ def main() {
                         sh "cp log.html ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}-log.html"
                         sh "cp result.xml ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}-report.xml"
                     }
-                    stash name: "${BRANCH}-report", includes: "TAF/testArtifacts/reports/merged-report/*"
+                    stash name: "x86_64-mongo-${BRANCH}-report", includes: "TAF/testArtifacts/reports/merged-report/*"
                 }
                 stage ('Shutdown EdgeX') {
                     sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE}:rw,z -w ${env.WORKSPACE} \

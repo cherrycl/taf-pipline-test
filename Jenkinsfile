@@ -43,7 +43,7 @@ def call(config) {
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
-                            USE_SECURITY = null
+                            USE_SECURITY =''
                         }
                         steps {
                             script {
@@ -64,7 +64,7 @@ def call(config) {
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-mongo'
-                            USE_SECURITY = null
+                            USE_SECURITY=''
                         }
                         steps {
                             script {
