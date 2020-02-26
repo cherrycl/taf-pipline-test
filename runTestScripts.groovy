@@ -23,6 +23,7 @@ def main() {
                 stage ('Deploy EdgeX') {
                     dir ('TAF/utils/scripts/docker') {
                         sh 'sh get-compose-file.sh'
+                        sh 'ls'
                     }
 
                     sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE}:rw,z -w ${env.WORKSPACE} \

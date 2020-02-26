@@ -42,6 +42,7 @@ def call(config) {
                             GOARCH = 'amd64'
                             SLAVE = edgex.getNode(config, 'amd64')
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                            COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
                             USE_NO_SECURITY="-no-secty"
                         }
@@ -64,6 +65,7 @@ def call(config) {
                     //         GOARCH = 'arm64'
                     //         SLAVE = edgex.getNode(config, 'arm64')
                     //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
+                    //         COMPOSE_IMAGE='docker/compose:1.25.4'
                     //         FOR_REDIS = true
                     //         SECURITY_SERVICE_NEEDED = false
                     //     }
