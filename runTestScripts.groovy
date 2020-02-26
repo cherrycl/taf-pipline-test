@@ -22,7 +22,7 @@ def main() {
 
                 stage ('Deploy EdgeX') {
                     dir ('TAF/utils/scripts/docker') {
-                        sh 'sh get-compose-file.sh'
+                        sh "sh get-compose-file.sh ${USE_DB} ${USE_NO_SECURITY} ${ARCH}"
                         sh 'ls'
                     }
 
