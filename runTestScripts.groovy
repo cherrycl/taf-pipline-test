@@ -8,7 +8,7 @@ def main() {
     for (x in BRANCHES) {
         def BRANCH = x
         
-        runbranchstage["Test ${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}"]= {
+        runbranchstage["Test ${ARCH}${USE_DB}${USE_SECURITY}${BRANCH}"]= {
             node("${SLAVE}") {
                 stage ('Checkout repository') {
                     checkout([$class: 'GitSCM',
@@ -22,7 +22,7 @@ def main() {
 
                 stage ('Deploy EdgeX') {
                     dir ('TAF/utils/scripts/docker') {
-                        if ("${USE_SECURITY}" != '-security') {
+                        if ("${USE_SECURITY}" != '-security-') {
                             sh "sh get-compose-file.sh ${USE_DB} ${ARCH}"
                         } else {
                             sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_SECURITY}"
@@ -75,10 +75,10 @@ def main() {
 
                     dir ("TAF/testArtifacts/reports/${BRANCH}-report") {
                         sh "mkdir ../merged-report"
-                        sh "cp log.html ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}-log.html"
-                        sh "cp result.xml ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}-${BRANCH}-report.xml"
+                        sh "cp log.html ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}${BRANCH}-log.html"
+                        sh "cp result.xml ../merged-report/${ARCH}${USE_DB}${USE_SECURITY}${BRANCH}-report.xml"
                     }
-                    stash name: "x86_64-mongo-${BRANCH}-report", includes: "TAF/testArtifacts/reports/merged-report/*"
+                    stash name: "${ARCH}${USE_DB}${USE_SECURITY}${BRANCH}-report", includes: "TAF/testArtifacts/reports/merged-report/*"
                 }
                 stage ('Shutdown EdgeX') {
                     sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE}:rw,z -w ${env.WORKSPACE} \

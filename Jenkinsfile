@@ -43,7 +43,7 @@ def call(config) {
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
-                            USE_SECURITY =''
+                            USE_SECURITY ='-'
                         }
                         steps {
                             script {
@@ -64,7 +64,7 @@ def call(config) {
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-mongo'
-                            USE_SECURITY=''
+                            USE_SECURITY='-'
                         }
                         steps {
                             script {
@@ -85,7 +85,7 @@ def call(config) {
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE = 'docker/compose:1.25.4'
                             USE_DB = '-mongo'
-                            USE_SECURITY = '-security'
+                            USE_SECURITY = '-security-'
                         }
                         steps {
                             script {
@@ -129,7 +129,9 @@ def call(config) {
                         for (z in BRANCHES) {
                             def BRANCH = z
                             echo "Branch:${BRANCH}"
-                            unstash "${BRANCH}-report"
+                            unstash "x86_64-redis-${BRANCH}-report"
+                            unstash "x86_64-mongo${BRANCH}-report"
+                            unstash "x86_64-mongo-security-${BRANCH}-report"
                         }
                     
                         dir ('TAF/testArtifacts/reports/merged-report/') {
