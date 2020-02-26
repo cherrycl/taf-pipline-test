@@ -54,6 +54,50 @@ def call(config) {
                             }
                         }
                     }
+                    stage('amd64-mongo'){
+                         when {
+                            beforeAgent true
+                            expression { edgex.nodeExists(config, 'amd64') }
+                        }
+                        environment {
+                            ARCH = 'x86_64'
+                            //GOARCH = 'amd64'
+                            SLAVE = edgex.getNode(config, 'amd64')
+                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                            COMPOSE_IMAGE='docker/compose:1.25.4'
+                            USE_DB = '-mongo'
+                            USE_NO_SECURITY='-no-secty'
+                        }
+                        steps {
+                            script {
+                                def rootDir = pwd()
+                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
+                                runTestScripts.main()
+                            }
+                        }
+                    }
+                    stage('amd64-mongo-security'){
+                         when {
+                            beforeAgent true
+                            expression { edgex.nodeExists(config, 'amd64') }
+                        }
+                        environment {
+                            ARCH = 'x86_64'
+                            //GOARCH = 'amd64'
+                            SLAVE = edgex.getNode(config, 'amd64')
+                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                            COMPOSE_IMAGE='docker/compose:1.25.4'
+                            USE_DB = '-mongo'
+                            USE_NO_SECURITY=''
+                        }
+                        steps {
+                            script {
+                                def rootDir = pwd()
+                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
+                                runTestScripts.main()
+                            }
+                        }
+                    }
                     // stage('arm64'){
                     //      when {
                     //         beforeAgent true
