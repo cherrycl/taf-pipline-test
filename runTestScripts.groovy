@@ -22,7 +22,7 @@ def main() {
 
                 stage ('Deploy EdgeX') {
                     dir ('TAF/utils/scripts/docker') {
-                        if ("${USE_NO_SECURITY}" = '') {
+                        if ("${USE_NO_SECURITY}" == '') {
                             sh "sh get-compose-file.sh ${USE_DB} ${ARCH}"
                         } else {
                             sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_NO_SECURITY}"
