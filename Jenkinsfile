@@ -19,11 +19,11 @@ pipeline {
         stage ('Checkout out master branch from edgex-taf') {
             steps {
                 checkout([$class: 'GitSCM',
-                    branches: [[name: '*/master']], 
+                    branches: [[name: '*/issue-43']], 
                     doGenerateSubmoduleConfigurations: false, 
                     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '']], 
                     submoduleCfg: [], 
-                    userRemoteConfigs: [[url: 'https://github.com/edgexfoundry/edgex-taf.git']]
+                    userRemoteConfigs: [[url: 'https://github.com/cherrycl/edgex-taf.git']]
                 ])
             }
         }
@@ -84,7 +84,21 @@ pipeline {
                             rebot --inputdir TAF/testArtifacts/reports/rename-report --outputdir TAF/testArtifacts/reports/merged-report"
             }
         }
-
+        stage('Clean up') {
+            steps {
+                script {
+                    try {
+                        sh 'docker kill $(docker ps -aq)'
+                        sh 'docker rmi -f $(docker images -aq)'
+                    } catch (e) {
+                        echo "Clean up error!"
+                    } finally {
+                        sh 'docker system prune -f -a'
+                        sh 'docker volume prune -f'
+                    }
+                }
+            }
+        }
         stage ('Publish Robotframework Report...') {
             steps{
                 echo 'Publish....'
