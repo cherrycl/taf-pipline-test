@@ -19,13 +19,13 @@ def call(config) {
     pipeline {
         agent { label edgex.mainNode(config) }
         options { 
-            timeout(time: 1, unit: 'HOURS')
+            timeout(time: 30, unit: 'MINUTES')
             timestamps() 
         }
 
         environment {
             // Define test branches and device services
-            BRANCHLIST = 'issue-43'
+            BRANCHLIST = 'master'
             PROFILELIST = 'device-virtual,device-modbus'
         }
 
@@ -129,9 +129,11 @@ def call(config) {
                         def BRANCHES = "${BRANCHLIST}".split(',')
                         for (z in BRANCHES) {
                             def BRANCH = z
-                            unstash "x86_64-redis-${BRANCH}-report"
-                            // unstash "x86_64-mongo-${BRANCH}-report"
-                            // unstash "x86_64-mongo-security-${BRANCH}-report"
+                            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                unstash "x86_64-redis-${BRANCH}-report"
+                                unstash "x86_64-mongo-${BRANCH}-report"
+                                unstash "x86_64-mongo-security-${BRANCH}-report"
+                            }
                         }
                     
                         dir ('TAF/testArtifacts/reports/merged-report/') {
