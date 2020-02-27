@@ -54,49 +54,49 @@ def call(config) {
                             }
                         }
                     }
-                    stage('amd64-mongo'){
-                         when {
-                            beforeAgent true
-                            expression { edgex.nodeExists(config, 'amd64') }
-                        }
-                        environment {
-                            ARCH = 'x86_64'
-                            SLAVE = edgex.getNode(config, 'amd64')
-                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE='docker/compose:1.25.4'
-                            USE_DB = '-mongo'
-                            USE_SECURITY='-'
-                        }
-                        steps {
-                            script {
-                                def rootDir = pwd()
-                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                                runTestScripts.main()
-                            }
-                        }
-                    }
-                    stage('amd64-mongo-security'){
-                         when {
-                            beforeAgent true
-                            expression { edgex.nodeExists(config, 'amd64') }
-                        }
-                        environment {
-                            ARCH = 'x86_64'
-                            SLAVE = edgex.getNode(config, 'amd64')
-                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE = 'docker/compose:1.26.0-rc2'
-                            USE_DB = '-mongo'
-                            USE_SECURITY = '-security-'
-                        }
-                        steps {
-                            script {
-                                def rootDir = pwd()
-                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                                runTestScripts.main()
-                            }
-                        }
-                    }
-                    stage('arm64'){
+                    // stage('amd64-mongo'){
+                    //      when {
+                    //         beforeAgent true
+                    //         expression { edgex.nodeExists(config, 'amd64') }
+                    //     }
+                    //     environment {
+                    //         ARCH = 'x86_64'
+                    //         SLAVE = edgex.getNode(config, 'amd64')
+                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                    //         COMPOSE_IMAGE='docker/compose:1.25.4'
+                    //         USE_DB = '-mongo'
+                    //         USE_SECURITY='-'
+                    //     }
+                    //     steps {
+                    //         script {
+                    //             def rootDir = pwd()
+                    //             def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
+                    //             runTestScripts.main()
+                    //         }
+                    //     }
+                    // }
+                    // stage('amd64-mongo-security'){
+                    //      when {
+                    //         beforeAgent true
+                    //         expression { edgex.nodeExists(config, 'amd64') }
+                    //     }
+                    //     environment {
+                    //         ARCH = 'x86_64'
+                    //         SLAVE = edgex.getNode(config, 'amd64')
+                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                    //         COMPOSE_IMAGE = 'docker/compose:1.26.0-rc2'
+                    //         USE_DB = '-mongo'
+                    //         USE_SECURITY = '-security-'
+                    //     }
+                    //     steps {
+                    //         script {
+                    //             def rootDir = pwd()
+                    //             def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
+                    //             runTestScripts.main()
+                    //         }
+                    //     }
+                    // }
+                    stage('arm64-redis'){
                          when {
                             beforeAgent true
                             expression { edgex.nodeExists(config, 'arm64') }
@@ -130,8 +130,8 @@ def call(config) {
                         for (z in BRANCHES) {
                             def BRANCH = z
                             unstash "x86_64-redis-${BRANCH}-report"
-                            unstash "x86_64-mongo-${BRANCH}-report"
-                            unstash "x86_64-mongo-security-${BRANCH}-report"
+                            // unstash "x86_64-mongo-${BRANCH}-report"
+                            // unstash "x86_64-mongo-security-${BRANCH}-report"
                         }
                     
                         dir ('TAF/testArtifacts/reports/merged-report/') {

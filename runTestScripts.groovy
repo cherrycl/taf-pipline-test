@@ -28,7 +28,7 @@ def main() {
                             sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_SECURITY}"
                         }
                         
-                        sh 'ls'
+                        sh 'ls *.yaml *.yml'
                     }
 
                     sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE}:rw,z -w ${env.WORKSPACE} \
