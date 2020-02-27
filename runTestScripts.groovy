@@ -29,6 +29,7 @@ def main() {
                         }
                         
                         sh 'ls *.yaml *.yml'
+                        sh 'docker run --help'
                     }
 
                     sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE}:rw,z -w ${env.WORKSPACE} \
