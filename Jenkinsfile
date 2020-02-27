@@ -11,7 +11,7 @@ pipeline {
         //GOARCH = 'amd64'
         //SLAVE = edgex.getNode(config, 'amd64')
         TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
-        COMPOSE_IMAGE='iotechsys/dev-testing-compose:1.25.0'
+        COMPOSE_IMAGE= 'iotechsys/dev-testing-compose:1.25.0'
         USE_DB = '-redis'
         USE_SECURITY = '-'
     }
@@ -37,7 +37,7 @@ pipeline {
                     }
                 }
                 sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
-                        -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                        -e COMPOSE_IMAGE=${COMPOSE_IMAGE} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
                         --exclude Skipped -u functionalTest/deploy-edgex.robot -p default"
             }
         }
@@ -49,12 +49,12 @@ pipeline {
                         def profile = x
                         echo '===== Deploy Device Service ====='
                         sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
-                                -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                                -e COMPOSE_IMAGE=${COMPOSE_IMAGE} -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
                                 --exclude Skipped -u functionalTest/device-service/deploy_device_service.robot -p ${profile}"
 
                         echo '===== Run Device Service Test Case ====='
                         sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
-                                -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                                -e COMPOSE_IMAGE=${COMPOSE_IMAGE} -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
                                 --exclude Skipped -u functionalTest/device-service/common -p ${profile}"
 
                         dir ('TAF/testArtifacts/reports/') {
@@ -69,13 +69,13 @@ pipeline {
 
                         echo '===== Shutdown Device Service ====='
                         sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
-                                -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                                -e COMPOSE_IMAGE=${COMPOSE_IMAGE} -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
                                 --exclude Skipped -u functionalTest/device-service/deploy_device_service.robot -p ${profile}"
                     }
                 }
                 echo '===== Merge Reports ====='
                 sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
-                            -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                            -e COMPOSE_IMAGE=${COMPOSE_IMAGE} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
                             rebot --inputdir TAF/testArtifacts/reports/rename-report --outputdir TAF/testArtifacts/reports/merged-report"
             }
         }
