@@ -11,8 +11,8 @@ pipeline {
         //GOARCH = 'amd64'
         //SLAVE = edgex.getNode(config, 'amd64')
         TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
-        COMPOSE_IMAGE='docker/compose:alpine-1.25.4-rc2'
-        USE_DB = 'redis'
+        COMPOSE_IMAGE='docker/compose:alpine-1.26.0-rc2'
+        USE_DB = '-redis'
         USE_SECURITY = '-'
     }
     stages {
