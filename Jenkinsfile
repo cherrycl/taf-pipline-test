@@ -32,12 +32,7 @@ pipeline {
             steps {
                 script {
                     dir ('TAF/utils/scripts/docker') {
-                        if ("${USE_SECURITY}" != '-security-') {
-                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH}"
-                        } else {
-                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_SECURITY}"
-                        }
-                        
+                        sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_SECURITY}"
                         sh 'ls *.yaml *.yml'
                     }
                 }
