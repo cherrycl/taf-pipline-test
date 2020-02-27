@@ -19,7 +19,7 @@ def call(config) {
     pipeline {
         agent { label edgex.mainNode(config) }
         options { 
-            timeout(time: 2, unit: 'HOURS')
+            timeout(time: 1, unit: 'HOURS')
             timestamps() 
         }
 
