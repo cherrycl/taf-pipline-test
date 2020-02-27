@@ -43,6 +43,7 @@ def call(config) {
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
+                            // Environment doesn't support empty variable, so adding '-' to represent
                             USE_SECURITY ='-'
                         }
                         steps {
@@ -83,7 +84,7 @@ def call(config) {
                             ARCH = 'x86_64'
                             SLAVE = edgex.getNode(config, 'amd64')
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE = 'docker/compose:1.25.4'
+                            COMPOSE_IMAGE = 'docker/compose:1.26.0-rc2'
                             USE_DB = '-mongo'
                             USE_SECURITY = '-security-'
                         }
@@ -95,29 +96,29 @@ def call(config) {
                             }
                         }
                     }
-                    // stage('arm64'){
-                    //      when {
-                    //         beforeAgent true
-                    //         expression { edgex.nodeExists(config, 'arm64') }
-                    //     }
-                    //     agent { label edgex.getNode(config, 'arm64') }
-                    //     environment {
-                    //         ARCH = 'arm64'
-                    //         GOARCH = 'arm64'
-                    //         SLAVE = edgex.getNode(config, 'arm64')
-                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
-                    //         COMPOSE_IMAGE='docker/compose:1.25.4'
-                    //         FOR_REDIS = true
-                    //         SECURITY_SERVICE_NEEDED = false
-                    //     }
-                    //     steps {
-                    //         script {
-                    //             def rootDir = pwd()
-                    //             def edgeXFuncTest = load "${rootDir}/edgeXFuncTest.groovy" 
-                    //             edgeXFuncTest.parallelBranch()
-                    //         }
-                    //     }
-                    // }
+                    stage('arm64'){
+                         when {
+                            beforeAgent true
+                            expression { edgex.nodeExists(config, 'arm64') }
+                        }
+                        agent { label edgex.getNode(config, 'arm64') }
+                        environment {
+                            ARCH = 'arm64'
+                            SLAVE = edgex.getNode(config, 'arm64')
+                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
+                            COMPOSE_IMAGE='docker/compose:1.26.0-rc2'
+                            USE_DB = '-redis'
+                            // Environment doesn't support empty variable, so adding '-' to represent
+                            USE_SECURITY ='-'
+                        }
+                        steps {
+                            script {
+                                def rootDir = pwd()
+                                def edgeXFuncTest = load "${rootDir}/edgeXFuncTest.groovy" 
+                                edgeXFuncTest.parallelBranch()
+                            }
+                        }
+                    }
                 }
                 
             }
