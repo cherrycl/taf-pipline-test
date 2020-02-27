@@ -1,158 +1,104 @@
 #!/usr/bin/env groovy
-def LOGFILES
-def cfgAmd64
-def cfgArm64
 
-call([
-    project: 'funcational-test',
-    mavenSettings: ['functional-testing-settings:SETTINGS_FILE']
-])
-
-def call(config) {
-    edgex.bannerMessage "[functional-testing] RAW Config: ${config}"
-
-    edgeXGeneric.validate(config)
-    edgex.setupNodes(config)
-
-    def _envVarMap = edgeXGeneric.toEnvironment(config)
-
-    pipeline {
-        agent { label edgex.mainNode(config) }
-        options { 
-            timeout(time: 1, unit: 'HOURS')
-            timestamps() 
-        }
-
-        environment {
+pipeline {
+    agent { label "docker-arm64" }
+    options { timestamps() }
+    environment {
             // Define test branches and device services
-            BRANCHLIST = 'issue-43'
-            PROFILELIST = 'device-virtual,device-modbus'
+        //BRANCHLIST = 'master'
+        PROFILELIST = 'device-virtual,device-modbus'
+        ARCH = 'arm64'
+        //GOARCH = 'amd64'
+        //SLAVE = edgex.getNode(config, 'amd64')
+        TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
+        COMPOSE_IMAGE='docker/compose:1.26.0-rc2'
+        USE_DB = 'redis'
+        USE_SECURITY = '-'
+    }
+    stages {
+        stage ('Checkout out master branch from edgex-taf') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']], 
+                    doGenerateSubmoduleConfigurations: false, 
+                    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '']], 
+                    submoduleCfg: [], 
+                    userRemoteConfigs: [[url: 'https://github.com/edgexfoundry/edgex-taf.git']]
+                ])
+            }
         }
 
-        stages {
-            stage ('Run Test') {
-                parallel {
-                    stage('amd64-redis'){
-                         when {
-                            beforeAgent true
-                            expression { edgex.nodeExists(config, 'amd64') }
+        stage ('Deploy EdgeX') {
+            steps {
+                script {
+                    dir ('TAF/utils/scripts/docker') {
+                        if ("${USE_SECURITY}" != '-security-') {
+                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH}"
+                        } else {
+                            sh "sh get-compose-file.sh ${USE_DB} ${ARCH} ${USE_SECURITY}"
                         }
-                        environment {
-                            ARCH = 'x86_64'
-                            SLAVE = edgex.getNode(config, 'amd64')
-                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE='docker/compose:1.25.4'
-                            USE_DB = '-redis'
-                            // Environment doesn't support empty variable, so adding '-' to represent
-                            USE_SECURITY ='-'
-                        }
-                        steps {
-                            script {
-                                def rootDir = pwd()
-                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                                runTestScripts.main()
-                            }
-                        }
-                    }
-                    // stage('amd64-mongo'){
-                    //      when {
-                    //         beforeAgent true
-                    //         expression { edgex.nodeExists(config, 'amd64') }
-                    //     }
-                    //     environment {
-                    //         ARCH = 'x86_64'
-                    //         SLAVE = edgex.getNode(config, 'amd64')
-                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                    //         COMPOSE_IMAGE='docker/compose:1.25.4'
-                    //         USE_DB = '-mongo'
-                    //         USE_SECURITY='-'
-                    //     }
-                    //     steps {
-                    //         script {
-                    //             def rootDir = pwd()
-                    //             def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                    //             runTestScripts.main()
-                    //         }
-                    //     }
-                    // }
-                    // stage('amd64-mongo-security'){
-                    //      when {
-                    //         beforeAgent true
-                    //         expression { edgex.nodeExists(config, 'amd64') }
-                    //     }
-                    //     environment {
-                    //         ARCH = 'x86_64'
-                    //         SLAVE = edgex.getNode(config, 'amd64')
-                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                    //         COMPOSE_IMAGE = 'docker/compose:1.26.0-rc2'
-                    //         USE_DB = '-mongo'
-                    //         USE_SECURITY = '-security-'
-                    //     }
-                    //     steps {
-                    //         script {
-                    //             def rootDir = pwd()
-                    //             def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                    //             runTestScripts.main()
-                    //         }
-                    //     }
-                    // }
-                    stage('arm64-redis'){
-                         when {
-                            beforeAgent true
-                            expression { edgex.nodeExists(config, 'arm64') }
-                        }
-                        agent { label edgex.getNode(config, 'arm64') }
-                        environment {
-                            ARCH = 'arm64'
-                            SLAVE = edgex.getNode(config, 'arm64')
-                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
-                            COMPOSE_IMAGE='docker/compose:1.26.0-rc2'
-                            USE_DB = '-redis'
-                            // Environment doesn't support empty variable, so adding '-' to represent
-                            USE_SECURITY ='-'
-                        }
-                        steps {
-                            script {
-                                def rootDir = pwd()
-                                def edgeXFuncTest = load "${rootDir}/edgeXFuncTest.groovy" 
-                                edgeXFuncTest.parallelBranch()
-                            }
-                        }
+                        
+                        sh 'ls *.yaml *.yml'
                     }
                 }
-                
+                sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                        -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                        --exclude Skipped -u functionalTest/deploy-edgex.robot -p default"
             }
+        }
+        stage ('Run Test Script') {
+            steps {
+                script {
+                    def PROFILES = "${PROFILELIST}".split(',')
+                    for (x in PROFILES) {
+                        def profile = x
+                        echo '===== Deploy Device Service ====='
+                        sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                                -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                                --exclude Skipped -u functionalTest/device-service/deploy_device_service.robot -p ${profile}"
 
-            stage ('Publish Robotframework Report...') {
-                steps{
-                    script {
-                        def BRANCHES = "${BRANCHLIST}".split(',')
-                        for (z in BRANCHES) {
-                            def BRANCH = z
-                            unstash "x86_64-redis-${BRANCH}-report"
-                            // unstash "x86_64-mongo-${BRANCH}-report"
-                            // unstash "x86_64-mongo-security-${BRANCH}-report"
+                        echo '===== Run Device Service Test Case ====='
+                        sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                                -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                                --exclude Skipped -u functionalTest/device-service/common -p ${profile}"
+
+                        dir ('TAF/testArtifacts/reports/') {
+                            stash name: "report-${profile}", includes: "edgex/*"
+
                         }
-                    
-                        dir ('TAF/testArtifacts/reports/merged-report/') {
-                            LOGFILES= sh (
-                                script: 'ls *-log.html | sed ":a;N;s/\\n/,/g;ta"',
-                                returnStdout: true
-                            )
+                        dir ('TAF/testArtifacts/reports/rename-report') {
+                            unstash "report-${profile}"
+                            sh "mv edgex/log.html ${profile}-common-log.html"
+                            sh "mv edgex/report.xml ${profile}-common-report.xml"
                         }
+
+                        echo '===== Shutdown Device Service ====='
+                        sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                                -e ARCH=${ARCH} -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                                --exclude Skipped -u functionalTest/device-service/deploy_device_service.robot -p ${profile}"
                     }
-                    
-                    publishHTML(
-                        target: [
-                            allowMissing: false,
-                            keepAll: false,
-                            reportDir: 'TAF/testArtifacts/reports/merged-report',
-                            reportFiles: "${LOGFILES}",
-                            reportName: 'Functional Test Reports']
-                    )
-
-                    junit 'TAF/testArtifacts/reports/merged-report/**.xml'
                 }
+                echo '===== Merge Reports ====='
+                sh "docker run --rm --network host -v ${env.WORKSPACE}:${env.WORKSPACE} -w ${env.WORKSPACE} \
+                            -v /var/run/docker.sock:/var/run/docker.sock ${TAF_COMMOM_IMAGE} \
+                            rebot --inputdir TAF/testArtifacts/reports/rename-report --outputdir TAF/testArtifacts/reports/merged-report"
+            }
+        }
+
+        stage ('Publish Robotframework Report...') {
+            steps{
+                echo 'Publish....'
+
+                publishHTML(
+                    target: [
+                        allowMissing: false,
+                        keepAll: false,
+                        reportDir: 'TAF/testArtifacts/reports/merged-report',
+                        reportFiles: 'log.html',
+                        reportName: 'Functional Test Reports']
+                )
+
+                junit 'TAF/testArtifacts/reports/merged-report/*.xml'
             }
         }
     }
