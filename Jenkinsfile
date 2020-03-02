@@ -19,7 +19,7 @@ pipeline {
         stage ('Checkout out master branch from edgex-taf') {
             steps {
                 checkout([$class: 'GitSCM',
-                    branches: [[name: '*/issue-43']], 
+                    branches: [[name: '*/arm64-error']], 
                     doGenerateSubmoduleConfigurations: false, 
                     extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: '']], 
                     submoduleCfg: [], 
