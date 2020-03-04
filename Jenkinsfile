@@ -1,17 +1,17 @@
 #!/usr/bin/env groovy
 
 pipeline {
-    agent { label "docker-arm64" }
+    agent { label "xpert-client" }
     options { timestamps() }
     environment {
             // Define test branches and device services
         //BRANCHLIST = 'master'
         PROFILELIST = 'device-virtual,device-modbus'
-        ARCH = 'arm64'
+        ARCH = 'amd64'
         //GOARCH = 'amd64'
         //SLAVE = edgex.getNode(config, 'amd64')
         TAF_COMMOM_IMAGE= 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common-arm64:latest'
-        COMPOSE_IMAGE= 'docker/compose:alpine-1.26.0-rc2'
+        COMPOSE_IMAGE= 'cherrycl/compose:1.25.4-test'
         USE_DB = '-redis'
         USE_SECURITY = '-'
     }
