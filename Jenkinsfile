@@ -77,6 +77,7 @@ def call(config) {
                     // }
                     stage('amd64-mongo-security'){
                         environment {
+                            SECURITY_SERVICE_NEEDED = true
                             ARCH = 'x86_64'
                             SLAVE = 'edgex-client'
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
