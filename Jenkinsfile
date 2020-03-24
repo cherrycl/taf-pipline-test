@@ -33,13 +33,9 @@ def call(config) {
             stage ('Run Test') {
                 parallel {
                     stage('amd64-redis'){
-                        when {
-                            beforeAgent true
-                            expression { edgex.nodeExists(config, 'amd64') }
-                        }
                         environment {
                             ARCH = 'x86_64'
-                            SLAVE = edgex.getNode(config, 'amd64')
+                            SLAVE = 'edgex-client'
                             TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
@@ -61,7 +57,7 @@ def call(config) {
                     //     }
                     //     environment {
                     //         ARCH = 'x86_64'
-                    //         SLAVE = edgex.getNode(config, 'amd64')
+                    //         SLAVE = 'edgex-client'
                     //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
                     //         COMPOSE_IMAGE='docker/compose:1.25.4'
                     //         USE_DB = '-mongo'
