@@ -25,7 +25,7 @@ def call(config) {
 
         environment {
             // Define test branches and device services
-            BRANCHLIST = 'arm64-error'
+            BRANCHLIST = 'security'
             PROFILELIST = 'device-virtual,device-modbus'
         }
 
