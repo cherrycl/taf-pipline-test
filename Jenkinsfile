@@ -40,7 +40,6 @@ def call(config) {
                             COMPOSE_IMAGE='docker/compose:1.25.4'
                             USE_DB = '-redis'
                             // Environment doesn't support empty variable, so adding '-' to represent
-                            SECURITY_SERVICE_NEEDED = false
                             USE_SECURITY ='-'
                         }
                         steps {
