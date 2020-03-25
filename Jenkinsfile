@@ -18,6 +18,9 @@ def call(config) {
 
     pipeline {
         agent { label 'xpert-client' }
+        triggers {
+            cron('H/30 * * * 0-7')
+        }
         options { 
             timeout(time: 30, unit: 'MINUTES')
             timestamps() 
@@ -25,31 +28,32 @@ def call(config) {
 
         environment {
             // Define test branches and device services
-            BRANCHLIST = 'issue-64'
+            BRANCHLIST = 'master'
             PROFILELIST = 'device-virtual,device-modbus'
         }
 
         stages {
             stage ('Run Test') {
                 parallel {
-                    // stage('amd64-redis'){
-                    //     environment {
-                    //         ARCH = 'x86_64'
-                    //         SLAVE = 'edgex-client'
-                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                    //         COMPOSE_IMAGE='docker/compose:1.25.4'
-                    //         USE_DB = '-redis'
-                    //         // Environment doesn't support empty variable, so adding '-' to represent
-                    //         USE_SECURITY ='-'
-                    //     }
-                    //     steps {
-                    //         script {
-                    //             def rootDir = pwd()
-                    //             def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                    //             runTestScripts.main()
-                    //         }
-                    //     }
-                    // }
+                    stage('amd64-redis'){
+                        environment {
+                            ARCH = 'x86_64'
+                            SLAVE = 'edgex-client'
+                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                            COMPOSE_IMAGE='docker/compose:1.25.4'
+                            USE_DB = '-redis'
+                            // Environment doesn't support empty variable, so adding '-' to represent
+                            USE_SECURITY ='-'
+                            SECURITY_SERVICE_NEEDED = false
+                        }
+                        steps {
+                            script {
+                                def rootDir = pwd()
+                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
+                                runTestScripts.main()
+                            }
+                        }
+                    }
                     // stage('amd64-mongo'){
                     //      when {
                     //         beforeAgent true
@@ -71,24 +75,24 @@ def call(config) {
                     //         }
                     //     }
                     // }
-                    stage('amd64-mongo-security'){
-                        environment {
-                            SECURITY_SERVICE_NEEDED = true
-                            ARCH = 'x86_64'
-                            SLAVE = 'edgex-client'
-                            TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
-                            COMPOSE_IMAGE = 'nexus3.edgexfoundry.org:10003/edgex-devops/edgex-compose:latest'
-                            USE_DB = '-mongo'
-                            USE_SECURITY = '-security-'
-                        }
-                        steps {
-                            script {
-                                def rootDir = pwd()
-                                def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
-                                runTestScripts.main()
-                            }
-                        }
-                    }
+                    // stage('amd64-mongo-security'){
+                    //     environment {
+                    //         SECURITY_SERVICE_NEEDED = true
+                    //         ARCH = 'x86_64'
+                    //         SLAVE = 'edgex-client'
+                    //         TAF_COMMOM_IMAGE = 'nexus3.edgexfoundry.org:10003/docker-edgex-taf-common:latest'
+                    //         COMPOSE_IMAGE = 'nexus3.edgexfoundry.org:10003/edgex-devops/edgex-compose:latest'
+                    //         USE_DB = '-mongo'
+                    //         USE_SECURITY = '-security-'
+                    //     }
+                    //     steps {
+                    //         script {
+                    //             def rootDir = pwd()
+                    //             def runTestScripts = load "${rootDir}/runTestScripts.groovy" 
+                    //             runTestScripts.main()
+                    //         }
+                    //     }
+                    // }
                     // stage('arm64-redis'){
                     //      when {
                     //         beforeAgent true
