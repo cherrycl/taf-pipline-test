@@ -127,9 +127,9 @@ def call(config) {
                         for (z in BRANCHES) {
                             def BRANCH = z
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                // unstash "x86_64-redis-${BRANCH}-report"
-                                // unstash "x86_64-mongo-${BRANCH}-report"
-                                unstash "x86_64-mongo-security-${BRANCH}-report"
+                                catchError { unstash "x86_64-redis-${BRANCH}-report" }
+                                catchError { unstash "x86_64-mongo-${BRANCH}-report" }
+                                catchError { unstash "x86_64-mongo-security-${BRANCH}-report" }
                             }
                         }
                     
