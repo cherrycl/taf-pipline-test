@@ -19,7 +19,7 @@ def call(config) {
     pipeline {
         agent { label 'xpert-client' }
         triggers {
-            cron('H/30 * * * 0-7')
+            cron('H */12 * * 0-7')
         }
         options { 
             timeout(time: 30, unit: 'MINUTES')
